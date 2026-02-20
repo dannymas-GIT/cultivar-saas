@@ -14,7 +14,7 @@ services:
       - ENVIRONMENT=staging
       - DEBUG=false
       - SECRET_KEY=${SECRET_KEY}
-      - ALLOWED_ORIGINS=${STAGING_URL}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-${STAGING_URL}}
     ports:
       - "8001:8000"
     depends_on:
@@ -36,7 +36,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - PUBLIC_API_URL=${STAGING_URL}/api
+        - PUBLIC_API_URL=${API_BASE_URL:-${STAGING_URL}}/api
         - PUBLIC_ENV=staging
     container_name: cultivar-saas_frontend_staging
     restart: unless-stopped
