@@ -53,3 +53,4 @@ This repo includes the OpenClaw agent pipeline. Configure GitHub secrets:
 - `DEPLOY_SSH_KEY` - SSH private key
 - `STAGING_HOST` - AWS VPS hostname/IP (or use `AWS_STAGING_HOST`)
 - `DEPLOY_USER` - Deploy user
+
