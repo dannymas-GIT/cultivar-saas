@@ -15,8 +15,8 @@ services:
       - DEBUG=false
       - SECRET_KEY=${SECRET_KEY}
       - ALLOWED_ORIGINS=${STAGING_URL}
-    expose:
-      - "8000"
+    ports:
+      - "8001:8000"
     depends_on:
       db:
         condition: service_healthy
