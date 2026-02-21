@@ -15,8 +15,6 @@
 		if (!token) {
 			goto("/login");
 		}
-		themeStore.init();
-		authChecked = true;
 	}
 
 	function logout() {
@@ -42,8 +40,8 @@
 					<label class="theme-label">
 						<span class="theme-label-text">Theme</span>
 						<select
-							value={themeStore.theme}
-							onchange={(e) => (themeStore.theme = (e.currentTarget.value as "light" | "dark" | "system"))}
+							value={$themeStore}
+							onchange={(e) => themeStore.set(e.currentTarget.value as "light" | "dark" | "system")}
 							class="theme-select"
 						>
 							<option value="system">system</option>

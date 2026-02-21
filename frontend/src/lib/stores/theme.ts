@@ -1,4 +1,6 @@
-/** Theme store: light | dark | system */
+/** Theme store: light | dark | system - uses writable for SSR compatibility */
+import { writable } from "svelte/store";
+
 const STORAGE_KEY = "cultivar_theme";
 
 function getStoredTheme(): "light" | "dark" | "system" {
@@ -19,29 +21,18 @@ function applyTheme(v: "light" | "dark" | "system") {
 	root.setAttribute("data-theme", resolved);
 }
 
-export function createThemeStore() {
-	let theme = $state<"light" | "dark" | "system">(getStoredTheme());
+export const themeStore = writable<"light" | "dark" | "system">(getStoredTheme());
 
-	return {
-		get theme() {
-			return theme;
-		},
-		set theme(v: "light" | "dark" | "system") {
-			theme = v;
-			if (typeof window !== "undefined") {
-				localStorage.setItem(STORAGE_KEY, v);
-				applyTheme(v);
-			}
-		},
-		init() {
-			if (typeof window !== "undefined") {
-				applyTheme(theme);
-				window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-					if (theme === "system") applyTheme("system");
-				});
-			}
-		},
-	};
+if (typeof window !== "undefined") {
+	themeStore.subscribe((v) => {
+		localStorage.setItem(STORAGE_KEY, v);
+		applyTheme(v);
+	});
+	applyTheme(getStoredTheme());
+	window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+		themeStore.update((v) => {
+			if (v === "system") applyTheme("system");
+			return v;
+		});
+	});
 }
-
-export const themeStore = createThemeStore();
