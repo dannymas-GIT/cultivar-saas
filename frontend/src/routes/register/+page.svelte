@@ -2,7 +2,7 @@
 	import { goto } from "$app/navigation";
 	import { setToken } from "$lib/auth";
 
-	const apiUrl = import.meta.env.PUBLIC_API_URL || "http://localhost:8000";
+	const apiUrl = import.meta.env.PUBLIC_API_URL || "";
 	let email = "";
 	let password = "";
 	let error = "";

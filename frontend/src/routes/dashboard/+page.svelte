@@ -3,7 +3,7 @@
 	import { goto } from "$app/navigation";
 	import { getToken, clearToken } from "$lib/auth";
 
-	const apiUrl = import.meta.env.PUBLIC_API_URL || "http://localhost:8000";
+	const apiUrl = import.meta.env.PUBLIC_API_URL || "";
 	let ideas: { id: string; title: string; status: string }[] = [];
 	let loading = true;
 	let error = "";

@@ -4,7 +4,7 @@
 	import { isAuthenticated } from "$lib/auth";
 
 	let health = { status: "loading" };
-	const apiUrl = import.meta.env.PUBLIC_API_URL || "http://localhost:8000";
+	const apiUrl = import.meta.env.PUBLIC_API_URL || "";
 
 	onMount(async () => {
 		if (isAuthenticated()) {
