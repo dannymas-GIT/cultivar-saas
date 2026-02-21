@@ -3,12 +3,13 @@
 	import { setToken } from "$lib/auth";
 
 	const apiUrl = import.meta.env.PUBLIC_API_URL || "";
-	let email = "";
-	let password = "";
-	let error = "";
-	let loading = false;
+	let email = $state("");
+	let password = $state("");
+	let error = $state("");
+	let loading = $state(false);
 
-	async function handleSubmit() {
+	async function handleSubmit(e: Event) {
+		e.preventDefault();
 		error = "";
 		loading = true;
 		try {
@@ -21,8 +22,8 @@
 			if (!res.ok) throw new Error(data.detail || "Registration failed");
 			setToken(data.access_token);
 			goto("/dashboard");
-		} catch (e) {
-			error = e instanceof Error ? e.message : "Registration failed";
+		} catch (err) {
+			error = err instanceof Error ? err.message : "Registration failed";
 		} finally {
 			loading = false;
 		}
@@ -32,7 +33,7 @@
 <main class="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8">
 	<h1 class="text-3xl font-bold text-gray-900 mb-2">Cultivar</h1>
 	<p class="text-gray-600 mb-6">Create your account</p>
-	<form on:submit|preventDefault={handleSubmit} class="w-full max-w-sm space-y-4">
+	<form onsubmit={handleSubmit} class="w-full max-w-sm space-y-4">
 		<input
 			type="email"
 			bind:value={email}

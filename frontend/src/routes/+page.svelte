@@ -3,20 +3,21 @@
 	import { goto } from "$app/navigation";
 	import { isAuthenticated } from "$lib/auth";
 
-	let health = { status: "loading" };
+	let health: { status: string; service?: string; message?: string } = $state({ status: "loading" });
 	const apiUrl = import.meta.env.PUBLIC_API_URL || "";
 
-	onMount(async () => {
+	onMount(() => {
 		if (isAuthenticated()) {
 			goto("/dashboard");
 			return;
 		}
-		try {
-			const res = await fetch(`${apiUrl}/api/health`);
-			health = await res.json();
-		} catch {
-			health = { status: "error", message: "API unreachable" };
-		}
+		fetch(`${apiUrl}/api/health`)
+			.then(async (res) => {
+				health = await res.json();
+			})
+			.catch(() => {
+				health = { status: "error", message: "API unreachable" };
+			});
 	});
 </script>
 

@@ -4,11 +4,11 @@
 	import { getToken, clearToken } from "$lib/auth";
 
 	const apiUrl = import.meta.env.PUBLIC_API_URL || "";
-	let ideas: { id: string; title: string; status: string }[] = [];
-	let loading = true;
-	let error = "";
+	let ideas: { id: string; title: string; status: string }[] = $state([]);
+	let loading = $state(true);
+	let error = $state("");
 
-	onMount(async () => {
+	onMount(() => {
 		const token = getToken();
 		if (!token) {
 			goto("/login");
@@ -16,30 +16,31 @@
 		}
 		const controller = new AbortController();
 		const timeout = setTimeout(() => controller.abort(), 15000);
-		try {
-			const res = await fetch(`${apiUrl}/api/ideas`, {
-				headers: { Authorization: `Bearer ${token}` },
-				signal: controller.signal,
+		fetch(`${apiUrl}/api/ideas`, {
+			headers: { Authorization: `Bearer ${token}` },
+			signal: controller.signal,
+		})
+			.then(async (res) => {
+				clearTimeout(timeout);
+				if (res.status === 401) {
+					clearToken();
+					goto("/login");
+					return;
+				}
+				if (!res.ok) throw new Error("Failed to load ideas");
+				ideas = await res.json();
+			})
+			.catch((e) => {
+				clearTimeout(timeout);
+				if (e instanceof Error) {
+					error = e.name === "AbortError" ? "Request timed out." : e.message;
+				} else {
+					error = "Failed to load";
+				}
+			})
+			.finally(() => {
+				loading = false;
 			});
-			clearTimeout(timeout);
-			if (res.status === 401) {
-				clearToken();
-				goto("/login");
-				return;
-			}
-			if (!res.ok) throw new Error("Failed to load ideas");
-			const data = await res.json();
-			ideas = data;
-		} catch (e) {
-			clearTimeout(timeout);
-			if (e instanceof Error) {
-				error = e.name === "AbortError" ? "Request timed out. Check your connection." : e.message;
-			} else {
-				error = "Failed to load";
-			}
-		} finally {
-			loading = false;
-		}
 	});
 
 	function logout() {
@@ -53,7 +54,7 @@
 		<div class="flex justify-between items-center mb-6">
 			<h1 class="text-2xl font-bold text-gray-900">Cultivar Dashboard</h1>
 			<button
-				on:click={logout}
+				onclick={logout}
 				class="text-sm text-gray-600 hover:text-gray-900"
 			>
 				Sign out
