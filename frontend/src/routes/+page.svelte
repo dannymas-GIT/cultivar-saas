@@ -1,24 +1,24 @@
 <script lang="ts">
-	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
 	import { isAuthenticated } from "$lib/auth";
+	import { browser } from "$app/environment";
 
 	let health: { status: string; service?: string; message?: string } = $state({ status: "loading" });
 	const apiUrl = import.meta.env.PUBLIC_API_URL || "";
 
-	onMount(() => {
+	if (browser) {
 		if (isAuthenticated()) {
 			goto("/dashboard");
-			return;
+		} else {
+			fetch(`${apiUrl}/api/health`)
+				.then(async (res) => {
+					health = await res.json();
+				})
+				.catch(() => {
+					health = { status: "error", message: "API unreachable" };
+				});
 		}
-		fetch(`${apiUrl}/api/health`)
-			.then(async (res) => {
-				health = await res.json();
-			})
-			.catch(() => {
-				health = { status: "error", message: "API unreachable" };
-			});
-	});
+	}
 </script>
 
 <main class="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8">

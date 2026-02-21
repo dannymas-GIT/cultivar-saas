@@ -1,47 +1,38 @@
 <script lang="ts">
-	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
 	import { getToken, clearToken } from "$lib/auth";
+	import { browser } from "$app/environment";
 
 	const apiUrl = import.meta.env.PUBLIC_API_URL || "";
 	let ideas: { id: string; title: string; status: string }[] = $state([]);
 	let loading = $state(true);
 	let error = $state("");
 
-	onMount(() => {
+	if (browser) {
 		const token = getToken();
 		if (!token) {
 			goto("/login");
-			return;
+		} else {
+			fetch(`${apiUrl}/api/ideas`, {
+				headers: { Authorization: `Bearer ${token}` },
+			})
+				.then(async (res) => {
+					if (res.status === 401) {
+						clearToken();
+						goto("/login");
+						return;
+					}
+					if (!res.ok) throw new Error("Failed to load ideas");
+					ideas = await res.json();
+				})
+				.catch((e) => {
+					error = e instanceof Error ? e.message : "Failed to load";
+				})
+				.finally(() => {
+					loading = false;
+				});
 		}
-		const controller = new AbortController();
-		const timeout = setTimeout(() => controller.abort(), 15000);
-		fetch(`${apiUrl}/api/ideas`, {
-			headers: { Authorization: `Bearer ${token}` },
-			signal: controller.signal,
-		})
-			.then(async (res) => {
-				clearTimeout(timeout);
-				if (res.status === 401) {
-					clearToken();
-					goto("/login");
-					return;
-				}
-				if (!res.ok) throw new Error("Failed to load ideas");
-				ideas = await res.json();
-			})
-			.catch((e) => {
-				clearTimeout(timeout);
-				if (e instanceof Error) {
-					error = e.name === "AbortError" ? "Request timed out." : e.message;
-				} else {
-					error = "Failed to load";
-				}
-			})
-			.finally(() => {
-				loading = false;
-			});
-	});
+	}
 
 	function logout() {
 		clearToken();
