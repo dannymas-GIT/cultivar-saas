@@ -8,7 +8,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from app.api.ideas import get_current_user_id
+from app.api.deps import get_current_user_id
 from app.core.database import get_db
 from sqlalchemy.orm import Session
 
