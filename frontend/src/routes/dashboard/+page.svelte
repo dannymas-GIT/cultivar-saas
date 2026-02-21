@@ -14,19 +14,29 @@
 			goto("/login");
 			return;
 		}
+		const controller = new AbortController();
+		const timeout = setTimeout(() => controller.abort(), 15000);
 		try {
 			const res = await fetch(`${apiUrl}/api/ideas`, {
 				headers: { Authorization: `Bearer ${token}` },
+				signal: controller.signal,
 			});
+			clearTimeout(timeout);
 			if (res.status === 401) {
 				clearToken();
 				goto("/login");
 				return;
 			}
 			if (!res.ok) throw new Error("Failed to load ideas");
-			ideas = await res.json();
+			const data = await res.json();
+			ideas = data;
 		} catch (e) {
-			error = e instanceof Error ? e.message : "Failed to load";
+			clearTimeout(timeout);
+			if (e instanceof Error) {
+				error = e.name === "AbortError" ? "Request timed out. Check your connection." : e.message;
+			} else {
+				error = "Failed to load";
+			}
 		} finally {
 			loading = false;
 		}
